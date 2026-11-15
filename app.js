@@ -1,3 +1,5 @@
+import { startAccess } from './access.js';
+
 const moscowDate = new Intl.DateTimeFormat('en', {
   year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Moscow',
 });
@@ -33,6 +35,7 @@ const formatDate = new Intl.DateTimeFormat('ru-RU', {
   weekday: 'short', day: 'numeric', month: 'long', timeZone: 'UTC',
 });
 let selectedDate = demonstrationDate;
+let savedDigest = null;
 
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -56,7 +59,7 @@ function updateProgress(tasks) {
 }
 
 function render() {
-  const { events, tasks } = daily[selectedDate] ?? { events: [], tasks: [] };
+  const { events, tasks } = savedDigest ?? daily[selectedDate] ?? { events: [], tasks: [] };
   const date = byId('date');
   date.dateTime = selectedDate;
   date.textContent = formatDate.format(new Date(selectedDate));
@@ -80,6 +83,7 @@ function render() {
     const input = element('input');
     input.type = 'checkbox';
     input.checked = Boolean(task.done);
+    input.disabled = savedDigest !== null;
     input.addEventListener('change', () => {
       task.done = input.checked;
       updateProgress(tasks);
@@ -104,4 +108,13 @@ byId('reset').addEventListener('click', () => {
   render();
 });
 
-render();
+if (!startAccess((digest) => {
+  savedDigest = digest;
+  selectedDate = digest.date;
+  byId('summary-label').textContent = 'Сохранённая тестовая сводка';
+  for (const id of ['previous', 'next', 'reset']) byId(id).hidden = true;
+  render();
+})) {
+  render();
+  byId('digest-view').hidden = false;
+}

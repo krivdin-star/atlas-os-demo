@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="theme-color" content="#f4f3ee">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <title>Сегодня · ATLAS OS</title>
@@ -16,7 +18,7 @@
   <a class="skip" href="#summary">К сводке</a>
   <aside class="sidebar">
     <a class="brand" href="#summary"><img src="./assets/icon-192.png" alt="" width="32" height="32"> ATLAS OS</a>
-    <nav aria-label="Разделы сводки">
+    <nav id="summary-nav" aria-label="Разделы сводки">
       <a class="current" href="#summary" aria-current="page">Сегодня</a>
       <a href="#schedule">Расписание</a>
       <a href="#tasks">Учебные дела</a>
@@ -24,16 +26,51 @@
     <p class="local-time">МОСКВА · UTC+3</p>
   </aside>
   <main id="summary">
+    <section id="access-panel" class="access-panel" aria-labelledby="access-title" hidden>
+      <h1 id="access-title">Вход в ATLAS OS</h1>
+      <p id="access-status" role="status"></p>
+      <button type="button" id="retry-access" hidden>Повторить</button>
+      <div id="forward-invite" hidden>
+        <p>Для установки на iPhone скопируйте приглашение и вставьте его в ATLAS OS с домашнего экрана.</p>
+        <button type="button" id="copy-arrived-invite">Скопировать приглашение</button>
+        <input id="arrived-invite-url" aria-label="Ссылка приглашения" readonly hidden>
+      </div>
+      <form id="pair-form">
+        <label for="pair-code">Личная ссылка или код приглашения</label>
+        <input id="pair-code" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" required>
+        <button id="pair-submit" type="submit">Привязать это устройство</button>
+      </form>
+    </section>
+    <div id="digest-view" hidden>
     <header class="summary-header">
-      <p class="demo">Демонстрационные данные</p>
+      <p id="summary-label" class="demo">Демонстрационные данные</p>
       <h1>Сегодня</h1>
-      <div class="date-bar" aria-label="Дата сводки">
+      <div id="date-bar" class="date-bar" aria-label="Дата сводки">
         <button type="button" id="previous" aria-label="Предыдущий день">←</button>
         <time id="date" aria-live="polite"></time>
         <button type="button" id="next" aria-label="Следующий день">→</button>
         <button type="button" id="reset">Сегодня</button>
       </div>
     </header>
+    <section id="session-controls" class="session-controls" aria-label="Личный доступ" hidden>
+      <div class="session-actions">
+        <button type="button" id="copy-saved-link">Скопировать ссылку на сводку</button>
+        <button type="button" id="make-phone-invite" hidden>Привязать iPhone</button>
+        <button type="button" id="logout">Выйти</button>
+      </div>
+      <input id="saved-link" aria-label="Постоянная ссылка на сводку" readonly>
+      <p id="session-status" role="status"></p>
+      <div id="phone-invite" class="phone-invite" hidden>
+        <h2>Привязка iPhone</h2>
+        <p>Отсканируйте QR камерой. В Safari скопируйте приглашение и вставьте его в ATLAS OS с домашнего экрана.</p>
+        <canvas id="phone-qr" role="img" aria-label="QR-код для привязки iPhone"></canvas>
+        <p id="invite-expires"></p>
+        <div class="session-actions">
+          <input id="phone-link" aria-label="Ссылка приглашения для iPhone" readonly>
+          <button type="button" id="copy-phone-link">Скопировать приглашение</button>
+        </div>
+      </div>
+    </section>
     <section class="progress" aria-labelledby="progress-label">
       <span id="progress-label">Прогресс дня</span>
       <progress id="progress" max="1" value="0" aria-labelledby="progress-label"></progress>
@@ -57,6 +94,7 @@
         <a href="./assets/daily.mp4">Открыть ролик</a>
       </video>
     </section>
+    </div>
   </main>
 </body>
 </html>
