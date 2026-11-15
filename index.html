@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f4f3ee">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Сегодня · ATLAS OS</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-180.png">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#summary">К сводке</a>
+  <aside class="sidebar">
+    <a class="brand" href="#summary"><img src="./assets/icon-192.png" alt="" width="32" height="32"> ATLAS OS</a>
+    <nav aria-label="Разделы сводки">
+      <a class="current" href="#summary" aria-current="page">Сегодня</a>
+      <a href="#schedule">Расписание</a>
+      <a href="#tasks">Учебные дела</a>
+    </nav>
+    <p class="local-time">МОСКВА · UTC+3</p>
+  </aside>
+  <main id="summary">
+    <header class="summary-header">
+      <p class="demo">Демонстрационные данные</p>
+      <h1>Сегодня</h1>
+      <div class="date-bar" aria-label="Дата сводки">
+        <button type="button" id="previous" aria-label="Предыдущий день">←</button>
+        <time id="date" aria-live="polite"></time>
+        <button type="button" id="next" aria-label="Следующий день">→</button>
+        <button type="button" id="reset">Сегодня</button>
+      </div>
+    </header>
+    <section class="progress" aria-labelledby="progress-label">
+      <span id="progress-label">Прогресс дня</span>
+      <progress id="progress" max="1" value="0" aria-labelledby="progress-label"></progress>
+      <output id="progress-count" aria-live="polite"></output>
+    </section>
+    <div class="daily-grid">
+      <section id="schedule" aria-labelledby="schedule-title">
+        <header class="section-heading"><h2 id="schedule-title">Расписание</h2><span id="schedule-count"></span></header>
+        <ol id="events" class="rows"></ol>
+        <p id="no-events" class="empty" hidden>На этот день нет событий.</p>
+      </section>
+      <section id="tasks" aria-labelledby="tasks-title">
+        <header class="section-heading"><h2 id="tasks-title">Учебные дела</h2><span id="task-count"></span></header>
+        <ul id="task-list" class="rows"></ul>
+        <p id="no-tasks" class="empty" hidden>На этот день нет учебных дел.</p>
+      </section>
+    </div>
+    <section class="daily-video" aria-labelledby="video-title">
+      <header class="section-heading"><h2 id="video-title">Ролик дня</h2></header>
+      <video controls playsinline preload="metadata" aria-labelledby="video-title" poster="./assets/daily-poster.jpg" src="./assets/daily.mp4">
+        <a href="./assets/daily.mp4">Открыть ролик</a>
+      </video>
+    </section>
+  </main>
+</body>
+</html>
