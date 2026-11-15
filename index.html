@@ -44,6 +44,22 @@
     <div id="digest-view" hidden>
     <header class="summary-header">
       <p id="summary-label" class="demo">Демонстрационные данные</p>
+      <details id="session-controls" class="session-controls" hidden>
+        <summary>Доступ</summary>
+        <div class="access-menu">
+          <button type="button" id="copy-saved-link">Скопировать ссылку на сводку</button>
+          <button type="button" id="make-phone-invite" hidden>Привязать iPhone</button>
+          <button type="button" id="logout">Выйти</button>
+          <input id="saved-link" aria-label="Постоянная ссылка на сводку" readonly hidden>
+          <p id="session-status" role="status"></p>
+          <div id="phone-invite" class="phone-invite" hidden>
+            <h2>Привязка iPhone</h2>
+            <p>Отсканируйте QR камерой. В Safari скопируйте приглашение и вставьте его в ATLAS OS с домашнего экрана.</p>
+            <canvas id="phone-qr" role="img" aria-label="QR-код для привязки iPhone"></canvas>
+            <p id="invite-expires"></p>
+          </div>
+        </div>
+      </details>
       <h1>Сегодня</h1>
       <div id="date-bar" class="date-bar" aria-label="Дата сводки">
         <button type="button" id="previous" aria-label="Предыдущий день">←</button>
@@ -52,25 +68,6 @@
         <button type="button" id="reset">Сегодня</button>
       </div>
     </header>
-    <section id="session-controls" class="session-controls" aria-label="Личный доступ" hidden>
-      <div class="session-actions">
-        <button type="button" id="copy-saved-link">Скопировать ссылку на сводку</button>
-        <button type="button" id="make-phone-invite" hidden>Привязать iPhone</button>
-        <button type="button" id="logout">Выйти</button>
-      </div>
-      <input id="saved-link" aria-label="Постоянная ссылка на сводку" readonly>
-      <p id="session-status" role="status"></p>
-      <div id="phone-invite" class="phone-invite" hidden>
-        <h2>Привязка iPhone</h2>
-        <p>Отсканируйте QR камерой. В Safari скопируйте приглашение и вставьте его в ATLAS OS с домашнего экрана.</p>
-        <canvas id="phone-qr" role="img" aria-label="QR-код для привязки iPhone"></canvas>
-        <p id="invite-expires"></p>
-        <div class="session-actions">
-          <input id="phone-link" aria-label="Ссылка приглашения для iPhone" readonly>
-          <button type="button" id="copy-phone-link">Скопировать приглашение</button>
-        </div>
-      </div>
-    </section>
     <section class="progress" aria-labelledby="progress-label">
       <span id="progress-label">Прогресс дня</span>
       <progress id="progress" max="1" value="0" aria-labelledby="progress-label"></progress>

@@ -70,6 +70,7 @@ async function copy(input, status, message) {
     await navigator.clipboard.writeText(input.value);
     status.textContent = message;
   } catch {
+    input.hidden = false;
     input.focus();
     input.select();
     status.textContent = 'Ссылка выделена. Скопируйте её.';
@@ -97,7 +98,6 @@ export function startAccess(showDigest) {
   const controls = byId('session-controls');
   const phoneInvite = byId('phone-invite');
   const savedLink = byId('saved-link');
-  const phoneLink = byId('phone-link');
   const message = (value, fallback) => errors[value] ?? fallback;
 
   function linkToDigest() {
@@ -109,6 +109,7 @@ export function startAccess(showDigest) {
   function locked(text, setup = true) {
     digestView.hidden = true;
     controls.hidden = true;
+    controls.open = false;
     phoneInvite.hidden = true;
     byId('summary-nav').hidden = true;
     byId('access-panel').hidden = false;
@@ -173,7 +174,6 @@ export function startAccess(showDigest) {
       invitation.hash = 'pair=' + arrived.code;
       const clipboardInput = byId('arrived-invite-url');
       clipboardInput.value = invitation.href;
-      clipboardInput.hidden = false;
       void copy(clipboardInput, status, 'Приглашение скопировано. Вставьте его в ATLAS OS с домашнего экрана.');
     });
   }
@@ -231,9 +231,9 @@ export function startAccess(showDigest) {
         sessionStatus.textContent = message(result.error, 'Не удалось создать QR-код.');
         return;
       }
+      if (!controls.open) return;
       const link = linkToDigest();
       link.hash = 'pair=' + result.code;
-      phoneLink.value = link.href;
       drawQr(byId('phone-qr'), link.href);
       byId('invite-expires').textContent = 'Действует до ' + new Intl.DateTimeFormat('ru-RU', {
         hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow',
@@ -247,7 +247,13 @@ export function startAccess(showDigest) {
   });
 
   byId('copy-saved-link').addEventListener('click', () => void copy(savedLink, sessionStatus, 'Ссылка на сводку скопирована.'));
-  byId('copy-phone-link').addEventListener('click', () => void copy(phoneLink, sessionStatus, 'Приглашение для iPhone скопировано.'));
+  controls.addEventListener('toggle', () => {
+    if (controls.open) return;
+    phoneInvite.hidden = true;
+    savedLink.hidden = true;
+    byId('phone-qr').width = 0;
+    sessionStatus.textContent = '';
+  });
 
   byId('logout').addEventListener('click', async (event) => {
     const button = event.currentTarget;
@@ -258,7 +264,6 @@ export function startAccess(showDigest) {
       byId('forward-invite').hidden = true;
       byId('arrived-invite-url').value = '';
       byId('arrived-invite-url').hidden = true;
-      byId('phone-link').value = '';
       byId('phone-qr').width = 0;
       byId('events').replaceChildren();
       byId('task-list').replaceChildren();
