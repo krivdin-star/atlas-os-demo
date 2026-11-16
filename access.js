@@ -4,7 +4,7 @@ import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
 import { setupSchedule } from './schedule.js?v=20261116-8';
-import { setupReminders } from './reminders.js';
+import { setupReminders } from './reminders.js?v=20261116-9';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
@@ -163,7 +163,12 @@ export function startAccess(showDigest) {
     digestId = result.digest.id;
     const link = linkToDigest();
     const destination = new URL(link);
-    if (['#week', '#reminders'].includes(location.hash)) destination.hash = location.hash;
+    const current = new URL(location.href);
+    if (['#week', '#reminders'].includes(current.hash)) destination.hash = current.hash;
+    const reminderId = current.searchParams.get('reminder');
+    if (current.hash === '#reminders' && digestPattern.test(reminderId ?? '')) {
+      destination.searchParams.set('reminder', reminderId);
+    }
     history.replaceState(null, '', destination);
     savedLink.value = link.href;
     byId('access-panel').hidden = true;

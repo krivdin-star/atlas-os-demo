@@ -15,7 +15,7 @@ export function setupReminders(rpc, getSession) {
   const editor = $('reminder-editor');
   const form = $('reminder-form');
   const submit = $('reminder-save');
-  let selected = new URL(location.href).searchParams.get('reminder');
+  let selected = null;
   let enabled = false;
   let editing;
   let version = 0;
@@ -108,6 +108,7 @@ export function setupReminders(rpc, getSession) {
     view.hidden = !enabled || location.hash !== '#reminders';
     $('reminders-nav').classList.toggle('current',!view.hidden);
     if (!view.hidden) {
+      selected = new URL(location.href).searchParams.get('reminder');
       $('today-nav').classList.remove('current');
       $('today-nav').removeAttribute('aria-current');
       link.setAttribute('aria-current','page');
@@ -118,7 +119,12 @@ export function setupReminders(rpc, getSession) {
     }
   }
   window.addEventListener('hashchange',route);
-  $('reminder-all').addEventListener('click',()=>{selected=null;void load();});
+  $('reminder-all').addEventListener('click', () => {
+    const url = new URL(location.href);
+    url.searchParams.delete('reminder');
+    history.replaceState(null, '', url);
+    route();
+  });
   $('reminder-new').addEventListener('click',()=>edit());
   $('reminder-cancel').addEventListener('click',()=>editor.close());
   form.elements.namedItem('kind').addEventListener('change',updateFields);
