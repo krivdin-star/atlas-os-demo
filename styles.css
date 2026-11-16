@@ -172,3 +172,6 @@ button:disabled { cursor: wait; opacity: .65; }
 #study-form label { min-width: 0; }
 #study-form input, #study-form select { min-width: 0; }
 #study-new, #study-save { background: var(--yellow); }
+
+#study-block { min-width: 0; display: grid; gap: 8px; border: 1px solid var(--line); }
+#study-date-sources label { margin-top: 8px; }

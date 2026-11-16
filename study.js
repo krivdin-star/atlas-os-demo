@@ -1,12 +1,24 @@
 const byId = id => document.getElementById(id);
-const fields = ['title', 'subject', 'source', 'due_at', 'planned_at', 'estimate_minutes', 'actual_minutes'];
+const fields = ['title', 'subject', 'source', 'due_at', 'planned_at', 'estimate_minutes', 'actual_minutes',
+  'block_start', 'block_end', 'due_phrase', 'planned_phrase', 'due_zone', 'planned_zone'];
+const fieldNames = {
+  title: 'Название', subject: 'Предмет', source: 'Источник', due_at: 'Сдать до', planned_at: 'Когда займусь',
+  block_start: 'Начало блока', block_end: 'Конец блока', due_phrase: 'Фраза для срока',
+  planned_phrase: 'Фраза для пожелания', due_zone: 'Пояс срока', planned_zone: 'Пояс пожелания',
+  estimate_minutes: 'Оценка, мин', actual_minutes: 'Фактически, мин', material_id: 'Материал', state: 'Статус',
+};
+const actions = { save: 'Сохранение', done: 'Завершение', skip: 'Пропуск', undo: 'Отмена правки' };
+const states = { draft: 'Черновик', active: 'Текущая', done: 'Выполнена', skipped: 'Пропущена' };
 const sections = { active: 'Текущих задач пока нет.', draft: 'Черновиков больше нет.', done: 'Выполненных задач пока нет.' };
 const errors = {
   unauthorized: 'Сеанс истёк. Откройте ATLAS OS заново.',
   conflict: 'Задача уже изменилась. Обновите список и повторите действие.',
   invalid: 'Проверьте название, даты и длительность.',
+  invalid_schedule: 'Укажи оба времени блока и проверь их порядок. Для исходной фразы нужны дата и действительный часовой пояс.',
+  cannot_undo: 'Последнюю правку уже нельзя отменить.',
 };
 const dayFormat = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+const historyTime = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Moscow' });
 const baseWeek = Date.UTC(2026, 10, 9);
 const day = 86400000;
 
@@ -51,6 +63,7 @@ export function setupStudy(rpc, getSession, showMaterial) {
   let changing = false;
   let items = [];
   let materials = [];
+  const operations = new Map();
 
   async function request(action, item = null, data = {}) {
     const result = await rpc('atlas_study_tasks', {
@@ -63,11 +76,20 @@ export function setupStudy(rpc, getSession, showMaterial) {
     return result;
   }
 
+  async function mutate(action, item, data = {}) {
+    const key = JSON.stringify([action, item.id, item.revision, data]);
+    if (!operations.has(key)) operations.set(key, crypto.randomUUID());
+    const result = await request(action, item, { ...data, operation_id: operations.get(key) });
+    operations.delete(key);
+    return result;
+  }
+
   function edit(item = null) {
     current = item ?? { id: crypto.randomUUID() };
     byId('study-editor-title').textContent = item?.state === 'draft' ? 'Проверить черновик' : item ? 'Изменить задачу' : 'Новая задача';
     save.textContent = item?.state === 'draft' ? 'Добавить в задачи' : 'Сохранить';
     for (const key of fields) form.elements.namedItem(key).value = current[key] ?? '';
+    byId('study-date-sources').open = Boolean(current.due_phrase || current.planned_phrase);
     const select = form.elements.namedItem('material_id');
     select.replaceChildren(new Option('Без материала', ''));
     if (current.material_id && !materials.some(material => material.id === current.material_id)) {
@@ -79,6 +101,39 @@ export function setupStudy(rpc, getSession, showMaterial) {
     editor.showModal();
   }
 
+  function changeValue(key, value) {
+    if (value == null || value === '') return '—';
+    if (['due_at', 'planned_at', 'block_start', 'block_end'].includes(key)) return formatTime(value);
+    if (key === 'state') return states[value] ?? value;
+    if (key === 'material_id') return materials.find(item => item.id === value)?.title ?? value;
+    return String(value);
+  }
+
+  function makeHistory(item) {
+    const history = node('details', '');
+    const entries = node('ol', '');
+    const latest = item.operations[0];
+    for (const operation of item.operations) {
+      const entry = node('li', '');
+      const device = { pc: 'ПК', phone: 'iPhone' }[operation.device_kind] ?? operation.device_kind;
+      const time = historyTime.format(new Date(operation.changed_at));
+      entry.append(node('p', actions[operation.action] + ' · ' + device + ' · ' + time + ' · версия ' + operation.revision));
+      const changes = node('ul', '');
+      for (const [key, after] of Object.entries(operation.after_fields)) {
+        if (!fieldNames[key]) continue;
+        const before = changeValue(key, operation.before_fields[key]);
+        changes.append(node('li', fieldNames[key] + ': ' + before + ' → ' + changeValue(key, after)));
+      }
+      entry.append(changes, node('small', 'Операция ' + operation.id));
+      entries.append(entry);
+    }
+    history.append(node('summary', 'История изменений'), entries);
+    if (latest.action === 'save' && Object.keys(latest.before_fields).length && !('state' in latest.before_fields)) {
+      history.append(button('Отменить последнюю правку', () => void change('undo', item)));
+    }
+    return history;
+  }
+
   function makeCard(item) {
     const card = node('article', '');
     card.className = 'week-day';
@@ -87,6 +142,11 @@ export function setupStudy(rpc, getSession, showMaterial) {
     if (item.study_week) card.append(node('p', weekLabel(item.study_week)));
     if (item.due_at) card.append(node('p', 'Сдать до: ' + formatTime(item.due_at)));
     if (item.planned_at) card.append(node('p', 'Когда займусь: ' + formatTime(item.planned_at)));
+    if (item.block_start && item.block_end) {
+      card.append(node('p', 'Блок работы: ' + formatTime(item.block_start) + ' — ' + formatTime(item.block_end)));
+    }
+    if (item.due_phrase) card.append(node('p', 'Фраза для срока: «' + item.due_phrase + '» · ' + item.due_zone));
+    if (item.planned_phrase) card.append(node('p', 'Фраза для пожелания: «' + item.planned_phrase + '» · ' + item.planned_zone));
     if (item.estimate_minutes !== null) card.append(node('p', 'Оценка: ' + item.estimate_minutes + ' мин'));
     if (item.actual_minutes !== null) card.append(node('p', 'Фактически: ' + item.actual_minutes + ' мин'));
     if (item.source) card.append(node('p', 'Источник: ' + item.source));
@@ -104,6 +164,7 @@ export function setupStudy(rpc, getSession, showMaterial) {
       history.append(node('summary', 'История переносов'), entries);
       card.append(history);
     }
+    if (item.operations?.length) card.append(makeHistory(item));
     return card;
   }
 
@@ -137,8 +198,9 @@ export function setupStudy(rpc, getSession, showMaterial) {
     if (changing) return;
     changing = true;
     try {
-      await request(action, item);
-      await load(action === 'done' ? 'Задача перенесена в историю.' : 'Черновик пропущен.');
+      await mutate(action, item);
+      const notices = { done: 'Задача перенесена в историю.', skip: 'Черновик пропущен.', undo: 'Правка отменена.' };
+      await load(notices[action]);
     } catch (error) {
       status.textContent = errors[error.message] ?? 'Не удалось выполнить действие.';
       retry.hidden = false;
@@ -173,7 +235,7 @@ export function setupStudy(rpc, getSession, showMaterial) {
     formStatus.textContent = 'Сохраняем задачу…';
     const item = current;
     try {
-      await request('save', item, Object.fromEntries(new FormData(form)));
+      await mutate('save', item, Object.fromEntries(new FormData(form)));
       editor.close();
       if (item.state === 'draft' || !item.state) section.value = 'active';
       await load('Задача сохранена.');
@@ -191,6 +253,7 @@ export function setupStudy(rpc, getSession, showMaterial) {
       nav.hidden = true;
       items = [];
       materials = [];
+      operations.clear();
       if (editor.open) editor.close();
       list.replaceChildren();
       route();
