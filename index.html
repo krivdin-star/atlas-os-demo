@@ -12,7 +12,7 @@
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
   <link rel="stylesheet" href="./styles.css?v=20261116-13">
-  <script type="module" src="./app.js?v=20261116-15"></script>
+  <script type="module" src="./app.js?v=20261116-16"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -230,6 +230,7 @@
         <label>Предмет <input name="subject" maxlength="120"></label>
         <label>Сдать до <input name="due_at" type="datetime-local" min="2000-01-01T00:00" max="2099-12-31T23:59"></label>
         <label>Когда займусь <input name="planned_at" type="datetime-local" min="2000-01-01T00:00" max="2099-12-31T23:59"></label>
+        <p id="study-closed-block-note" hidden>Чтобы назначить блок, верни задачу в работу.</p>
         <fieldset id="study-block">
           <legend>Подтверждённый блок работы</legend>
           <label>Начало <input name="block_start" type="datetime-local" min="2000-01-01T00:00" max="2099-12-31T23:59"></label>

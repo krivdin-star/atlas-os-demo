@@ -17,6 +17,8 @@ const errors = {
   invalid: 'Проверьте название, даты и длительность.',
   invalid_schedule: 'Укажи оба времени блока и проверь их порядок. Для исходной фразы нужны дата и действительный часовой пояс.',
   cannot_undo: 'Последнюю правку уже нельзя отменить.',
+  operation_conflict: 'Этот запрос уже использован для другой правки. Обнови список и повтори действие.',
+  task_closed_block: 'Чтобы изменить блок, верни задачу в работу.',
 };
 const dayFormat = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', timeZone: 'UTC' });
 const historyTime = new Intl.DateTimeFormat('ru-RU', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Europe/Moscow' });
@@ -90,6 +92,9 @@ export function setupStudy(rpc, getSession, showMaterial) {
     byId('study-editor-title').textContent = item?.state === 'draft' ? 'Проверить черновик' : item ? 'Изменить задачу' : 'Новая задача';
     save.textContent = item?.state === 'draft' ? 'Добавить в задачи' : 'Сохранить';
     for (const key of fields) form.elements.namedItem(key).value = current[key] ?? '';
+    const closed = ['done', 'cancelled'].includes(current.state);
+    byId('study-block').disabled = closed;
+    byId('study-closed-block-note').hidden = !closed;
     byId('study-date-sources').open = Boolean(current.due_phrase || current.planned_phrase);
     const select = form.elements.namedItem('material_id');
     select.replaceChildren(new Option('Без материала', ''));
