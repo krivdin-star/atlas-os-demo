@@ -31,16 +31,20 @@ export function setupReminders(rpc, getSession) {
     return result;
   }
 
-  function edit(item) {
-    editing = item ?? { id:crypto.randomUUID(), starts:timestamp(Date.now()+180000).replace(' ','T'), every:1, kind:'once', text:'', until_day:'', days:[] };
-    for (const key of ['starts','every','kind','text','until_day']) form.elements.namedItem(key).value = editing[key] ?? '';
+  function setTaskOptions(value) {
     const task = form.elements.namedItem('study_task_id');
     task.replaceChildren(new Option('Без задачи', ''));
     if (editing.study_task_id && !tasks.some(item => item.id === editing.study_task_id)) {
       task.add(new Option(editing.task_title, editing.study_task_id));
     }
     for (const item of tasks) task.add(new Option(item.title, item.id));
-    task.value = editing.study_task_id ?? '';
+    task.value = value ?? '';
+  }
+
+  function edit(item) {
+    editing = item ?? { id:crypto.randomUUID(), starts:timestamp(Date.now()+180000).replace(' ','T'), every:1, kind:'once', text:'', until_day:'', days:[] };
+    for (const key of ['starts','every','kind','text','until_day']) form.elements.namedItem(key).value = editing[key] ?? '';
+    setTaskOptions(editing.study_task_id);
     for (const box of form.querySelectorAll('[name="day"]')) box.checked = editing.days.includes(Number(box.value));
     updateFields();
     $('reminder-form-status').textContent = '';
@@ -121,6 +125,7 @@ export function setupReminders(rpc, getSession) {
       const result=await operation('list');
       if(attempt===version) {
         tasks = result.tasks ?? [];
+        if (editor.open) setTaskOptions(form.elements.namedItem('study_task_id').value);
         render(result.items);
       }
     } catch {

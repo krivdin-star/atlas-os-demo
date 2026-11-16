@@ -4,7 +4,7 @@ import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
 import { setupSchedule } from './schedule.js?v=20261116-12';
-import { setupReminders } from './reminders.js?v=20261116-14';
+import { setupReminders } from './reminders.js?v=20261116-15';
 import { setupLibrary } from './library.js?v=20261116-12';
 import { setupStudy } from './study.js?v=20261116-14';
 
