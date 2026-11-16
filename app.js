@@ -19,8 +19,9 @@ function today() {
 let selectedDate = today();
 let controls;
 let snapshot = null;
+let lastSaved = null;
 let requestId = 0;
-let pendingSave = null;
+const pendingSaves = new Map();
 
 function element(tag, text, className) {
   const node = document.createElement(tag);
@@ -54,6 +55,20 @@ function taskRow(task) {
   else if (task.work_at) row.append(element('small','Когда займусь: ' + dateTime(task.work_at)));
   else if (task.detail) row.append(element('small',task.detail));
   return row;
+}
+
+function renderSnapshotLink() {
+  const saved = snapshot ?? lastSaved;
+  permanentLink.hidden = !saved;
+  if (!saved) {
+    permanentLink.removeAttribute('href');
+    return;
+  }
+  const link = new URL(location.pathname, location.origin);
+  link.searchParams.set('summary', saved.id);
+  permanentLink.href = link.href;
+  permanentLink.textContent = snapshot ? 'Постоянная ссылка на сводку'
+    : 'Сохранённая сводка за ' + shortDate.format(new Date(saved.date));
 }
 
 function render(data = null) {
@@ -97,8 +112,7 @@ function render(data = null) {
   for (const id of ['previous','next','reset']) byId(id).hidden = Boolean(snapshot);
   byId('open-live-digest').hidden = !snapshot;
   save.hidden = !data || Boolean(snapshot);
-  permanentLink.hidden = !snapshot;
-  if (snapshot) permanentLink.href = location.href;
+  renderSnapshotLink();
 }
 
 async function load() {
@@ -124,7 +138,6 @@ async function load() {
 function chooseDate(day) {
   if (day < '2000-01-01' || day > '2099-12-31' || selectedDate === day) return;
   selectedDate = day;
-  pendingSave = null;
   void load();
 }
 
@@ -143,25 +156,35 @@ byId('reset').addEventListener('click', () => {
 retry.addEventListener('click', () => void load());
 byId('open-live-digest').addEventListener('click', () => {
   snapshot = null;
-  pendingSave = null;
   controls.setSnapshot(null);
   void load();
 });
 save.addEventListener('click', async () => {
-  const attempt = requestId;
-  pendingSave ??= crypto.randomUUID();
+  const api = controls;
+  const day = selectedDate;
+  if (!api || snapshot || save.disabled) return;
+  if (!pendingSaves.has(day)) pendingSaves.set(day, crypto.randomUUID());
   save.disabled = true;
   try {
-    const data = await controls.work(selectedDate,pendingSave);
-    if (requestId !== attempt) return;
+    const data = await api.work(day,pendingSaves.get(day));
+    if (controls !== api) return;
     if (data.error) throw new Error(data.error);
-    snapshot = data;
-    pendingSave = null;
-    controls.setSnapshot(data.id);
-    render(data);
-    status.textContent = 'Сводка сохранена.';
+    pendingSaves.delete(day);
+    lastSaved = { id: data.id, date: data.date };
+    if (selectedDate === day && !snapshot) {
+      requestId++;
+      snapshot = data;
+      api.setSnapshot(data.id);
+      retry.hidden = true;
+      render(data);
+      status.textContent = 'Сводка сохранена.';
+    } else {
+      renderSnapshotLink();
+    }
   } catch {
-    if (requestId === attempt) status.textContent = 'Не удалось подтвердить сохранение. Повтори попытку.';
+    if (controls === api && selectedDate === day && !snapshot) {
+      status.textContent = 'Не удалось подтвердить сохранение. Повтори попытку.';
+    }
   } finally { save.disabled = false; }
 });
 
@@ -183,7 +206,8 @@ if (!startAccess((digest, api) => {
   requestId++;
   controls = null;
   snapshot = null;
-  pendingSave = null;
+  lastSaved = null;
+  pendingSaves.clear();
 })) {
   render();
   status.textContent = 'Подключение к рабочей базе не настроено.';
