@@ -159,3 +159,10 @@ button:disabled { cursor: wait; opacity: .65; }
 .reminder-form { display: grid; gap: 12px; }
 .reminder-form label { display: grid; gap: 4px; font: 600 12px var(--mono); }
 .reminder-form input:not([type=checkbox]), .reminder-form select { width: 100%; min-height: 38px; font-size: 16px; }
+
+#library-description { display: grid; gap: 10px; min-width: 0; border: 1px solid var(--line); }
+#library-description[hidden] { display: none; }
+#library-section { min-height: 38px; font-size: 16px; }
+#library-reader-text { white-space: pre-wrap; overflow-wrap: anywhere; }
+#library-items article, #library-reader-title { overflow-wrap: anywhere; }
+#library-new, #library-save { background: var(--yellow); }

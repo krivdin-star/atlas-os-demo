@@ -11,8 +11,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
-  <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./app.js?v=20261116-9"></script>
+  <link rel="stylesheet" href="./styles.css?v=20261116-10">
+  <script type="module" src="./app.js?v=20261116-10"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -22,6 +22,7 @@
       <a id="today-nav" class="current" href="#summary" aria-current="page">Сегодня</a>
       <a id="week-nav" href="#schedule">Расписание</a>
       <a id="reminders-nav" href="#reminders" hidden>Напоминания</a>
+      <a id="library-nav" href="#library" hidden>Материалы</a>
       <a href="#tasks">Учебные дела</a>
     </nav>
     <p class="local-time">МОСКВА · UTC+3</p>
@@ -160,6 +161,51 @@
         <p id="reminder-form-status" role="status"></p>
         <div class="week-toolbar"><button type="submit" id="reminder-save">Сохранить</button><button type="button" id="reminder-cancel">Отмена</button></div>
       </form>
+    </dialog>
+    <section id="library" class="week-view" aria-labelledby="library-title" hidden>
+      <h1 id="library-title">Материалы</h1>
+      <div class="week-toolbar">
+        <button id="library-new" type="button">Добавить файл</button>
+        <label>Раздел <select id="library-section">
+          <option value="active">Библиотека</option>
+          <option value="archived">Архив</option>
+          <option value="trashed">Корзина</option>
+        </select></label>
+        <button id="library-clear" type="button" hidden>Очистить архив</button>
+        <button id="library-retry" type="button" hidden>Повторить</button>
+      </div>
+      <p id="library-status" role="status"></p>
+      <div id="library-items" class="week-days"></div>
+    </section>
+    <dialog id="library-editor" class="reminder-editor" aria-labelledby="library-editor-title">
+      <form id="library-form" class="reminder-form">
+        <h2 id="library-editor-title">Добавить файл</h2>
+        <label>Файл · PDF, Markdown, JPEG или PNG до 6 МБ
+          <input name="file" type="file" accept=".pdf,.md,.jpg,.jpeg,.png" required>
+        </label>
+        <fieldset id="library-description">
+          <legend>Описание материала</legend>
+          <label>Название <input name="title" maxlength="160" required></label>
+          <label>Предмет <input name="subject" maxlength="120" required></label>
+          <label>Тема <input name="topic" maxlength="160"></label>
+          <label>Источник <input name="source" maxlength="250" placeholder="Например, конспект лекции" required></label>
+        </fieldset>
+        <p id="library-form-status" role="status"></p>
+        <div class="week-toolbar">
+          <button id="library-save" type="submit">Загрузить</button>
+          <button id="library-cancel" type="button">Отмена</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="library-reader" class="reminder-editor" aria-labelledby="library-reader-title">
+      <h2 id="library-reader-title">Оригинал</h2>
+      <p id="library-reader-status" role="status"></p>
+      <pre id="library-reader-text" hidden></pre>
+      <div class="week-toolbar">
+        <a id="library-original" target="_blank" rel="noopener noreferrer" hidden>Открыть оригинал</a>
+        <a id="library-download" target="_blank" rel="noopener noreferrer" hidden>Скачать файл</a>
+        <button id="library-reader-close" type="button">Закрыть</button>
+      </div>
     </dialog>
   </main>
 </body>
