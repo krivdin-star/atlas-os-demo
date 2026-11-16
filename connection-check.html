@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'none'">
+  <title>Проверка соединения · ATLAS OS</title>
+  <link rel="stylesheet" href="./styles.css?v=20261116-18">
+  <script type="module" src="./connection-check.js?v=20261117-02"></script>
+</head>
+<body>
+  <main>
+    <h1>Проверка соединения</h1>
+    <p>Открой эту страницу на проблемном Wi-Fi с выключенным VPN. Проверка займёт до 15 секунд.</p>
+    <button id="run-check" type="button">Проверить снова</button>
+    <p id="check-state" role="status"></p>
+    <ul id="check-results"></ul>
+    <button id="copy-check" type="button" disabled>Скопировать результат</button>
+    <textarea id="check-report" aria-label="Результат проверки" rows="12" readonly hidden></textarea>
+    <p>Проверка использует тестовые запросы без доступа к личным данным.</p>
+    <a href="./">Вернуться в ATLAS OS</a>
+  </main>
+</body>
+</html>
