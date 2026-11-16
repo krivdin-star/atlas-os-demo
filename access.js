@@ -1,8 +1,8 @@
 import { supabaseUrl, publishableKey } from './access-config.js';
 import qrcode from './assets/qrcode.js';
 import { setupPush } from './push.js';
-import { DigestTimeoutError, requestDigest } from './digest-request.js';
-import { createDigestLoader } from './digest-loader.js';
+import { DigestTimeoutError, requestDigest } from './digest-request.js?v=20261117-01';
+import { createDigestLoader } from './digest-loader.js?v=20261117-01';
 import { setupSchedule } from './schedule.js?v=20261116-17';
 import { setupReminders } from './reminders.js?v=20261116-15';
 import { setupLibrary } from './library.js?v=20261116-12';
@@ -152,6 +152,7 @@ export function startAccess(showDigest, clearDigest = () => {}) {
   }
 
   function forgetSession() {
+    loader.stop();
     localStorage.removeItem(sessionKey);
     session = null;
   }
@@ -217,19 +218,27 @@ export function startAccess(showDigest, clearDigest = () => {}) {
   const loader = createDigestLoader({
     visible: () => document.visibilityState !== 'hidden',
     start() {
-      locked('Открываем сохранённую сводку…', false);
+      byId('connection-details').hidden = true;
+      locked(openSnapshot ? 'Открываем сохранённую сводку…' : 'Подключаемся к ATLAS OS…', false);
       byId('retry-access').hidden = false;
     },
-    read: (signal) => requestDigest(supabaseUrl, session, digestId, 8000, signal),
+    read: (signal) => requestDigest(supabaseUrl, session, digestId, 8000, signal, publishableKey),
     loaded(result) {
       byId('retry-access').hidden = true;
       applyDigest(result, true);
     },
-    failed(error) {
-      const text = error instanceof DigestTimeoutError
-        ? 'Сводка не загрузилась за 8 секунд. Проверьте сеть и нажмите «Повторить».'
-        : networkError;
+    failed(error, { retrying }) {
+      const text = retrying
+        ? 'Соединение прервалось. Подключаемся повторно…'
+        : error instanceof DigestTimeoutError
+          ? 'Сервер не ответил. Привязка сохранена. После смены сети подключение повторится автоматически.'
+          : 'Не удалось связаться с сервером через эту сеть. Привязка сохранена. После смены сети подключение повторится автоматически.';
       locked(text, false);
+      const routes = error.connection;
+      byId('connection-code').textContent = 'Версия 20261117-01 · ' +
+        (routes ? 'Основной: ' + routes.primary + ' · Резервный: ' + routes.fallback
+          : error instanceof DigestTimeoutError ? 'Время ожидания истекло' : 'Нет ответа');
+      byId('connection-details').hidden = false;
       byId('retry-access').hidden = false;
     },
   });
@@ -241,9 +250,11 @@ export function startAccess(showDigest, clearDigest = () => {}) {
   window.addEventListener('pagehide', loader.pause);
   window.addEventListener('pageshow', loader.resume);
   window.addEventListener('focus', loader.resume);
+  window.addEventListener('online', loader.reconnect);
+  navigator.connection?.addEventListener('change', loader.reconnect);
 
   async function openDigest() {
-    return applyDigest(await requestDigest(supabaseUrl, session, digestId), false);
+    return applyDigest(await requestDigest(supabaseUrl, session, digestId, 8000, undefined, publishableKey), false);
   }
 
   byId('access-panel').hidden = false;

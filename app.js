@@ -1,4 +1,4 @@
-import { startAccess } from './access.js?v=20261116-17';
+import { startAccess } from './access.js?v=20261117-01';
 
 const byId = id => document.getElementById(id);
 const moscow = new Intl.DateTimeFormat('en-CA', {

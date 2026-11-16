@@ -12,7 +12,7 @@
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
   <link rel="stylesheet" href="./styles.css?v=20261116-18">
-  <script type="module" src="./app.js?v=20261116-20"></script>
+  <script type="module" src="./app.js?v=20261117-01"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -32,6 +32,10 @@
       <h1 id="access-title">Вход в ATLAS OS</h1>
       <p id="access-status" role="status"></p>
       <button type="button" id="retry-access" hidden>Повторить</button>
+      <details id="connection-details" hidden>
+        <summary>Данные для проверки соединения</summary>
+        <p id="connection-code"></p>
+      </details>
       <div id="forward-invite" hidden>
         <p>Для установки на iPhone скопируйте приглашение и вставьте его в ATLAS OS с домашнего экрана.</p>
         <button type="button" id="copy-arrived-invite">Скопировать приглашение</button>
