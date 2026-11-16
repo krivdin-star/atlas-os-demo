@@ -3,7 +3,8 @@ import qrcode from './assets/qrcode.js';
 import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
-import { setupSchedule } from './schedule.js?v=20261116-7';
+import { setupSchedule } from './schedule.js?v=20261116-8';
+import { setupReminders } from './reminders.js';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
@@ -112,6 +113,7 @@ export function startAccess(showDigest) {
   const message = (value, fallback) => errors[value] ?? fallback;
   const push = setupPush({ rpc, getSession: () => session, getDigest: () => digestId });
   const schedule = setupSchedule(() => session);
+  const reminders = setupReminders(rpc, () => session);
 
   function linkToDigest() {
     const url = new URL(location.pathname, location.origin);
@@ -128,6 +130,7 @@ export function startAccess(showDigest) {
   function locked(text, setup = true) {
     digestView.hidden = true;
     schedule.disable();
+    reminders.disable();
     controls.hidden = true;
     push.show(false);
     controls.open = false;
@@ -160,7 +163,7 @@ export function startAccess(showDigest) {
     digestId = result.digest.id;
     const link = linkToDigest();
     const destination = new URL(link);
-    if (location.hash === '#week') destination.hash = '#week';
+    if (['#week', '#reminders'].includes(location.hash)) destination.hash = location.hash;
     history.replaceState(null, '', destination);
     savedLink.value = link.href;
     byId('access-panel').hidden = true;
@@ -171,6 +174,7 @@ export function startAccess(showDigest) {
     showDigest(result.digest);
     digestView.hidden = false;
     schedule.enable();
+    reminders.enable();
     return true;
   }
 

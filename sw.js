@@ -11,9 +11,10 @@ self.addEventListener('push', (event) => {
     message = null;
   }
   const digest = message?.digest;
-  event.waitUntil(self.registration.showNotification('Карта вашего дня!', {
+  const reminder = message?.reminder;
+  event.waitUntil(self.registration.showNotification(digestPattern.test(reminder ?? '') ? 'Напоминание ATLAS OS' : 'Карта вашего дня!', {
     body: typeof message?.body === 'string' ? message.body : 'Нажми, чтобы открыть сводку',
-    data: { digest: digestPattern.test(digest ?? '') ? digest : null },
+    data: { digest: digestPattern.test(digest ?? '') ? digest : null, reminder: digestPattern.test(reminder ?? '') ? reminder : null },
   }));
 });
 
@@ -22,6 +23,11 @@ self.addEventListener('notificationclick', (event) => {
   const digest = event.notification.data?.digest;
   const target = new URL(self.registration.scope);
   if (digestPattern.test(digest ?? '')) target.searchParams.set('summary', digest);
+  const reminder = event.notification.data?.reminder;
+  if (digestPattern.test(reminder ?? '')) {
+    target.searchParams.set('reminder', reminder);
+    target.hash = 'reminders';
+  }
   // The lock-screen launch must fetch the current shell instead of a stale copy.
   target.searchParams.set('launch', String(Date.now()));
   event.waitUntil((async () => {

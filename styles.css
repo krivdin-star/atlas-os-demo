@@ -153,3 +153,9 @@ button:disabled { cursor: wait; opacity: .65; }
 .event-hours { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
 #event-status:empty, #week-status:empty { display: none; }
 @media (max-width: 680px) { .week-days { grid-template-columns: 1fr; } }
+
+.reminder-editor { width: min(460px, calc(100% - 24px)); max-height: 90vh; padding: 18px; color: var(--ink); background: var(--panel); border: 2px solid var(--ink); }
+.reminder-editor::backdrop { background: #1b1b1880; }
+.reminder-form { display: grid; gap: 12px; }
+.reminder-form label { display: grid; gap: 4px; font: 600 12px var(--mono); }
+.reminder-form input:not([type=checkbox]), .reminder-form select { width: 100%; min-height: 38px; font-size: 16px; }

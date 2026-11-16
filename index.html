@@ -12,7 +12,7 @@
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
   <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./app.js?v=20261116-7"></script>
+  <script type="module" src="./app.js?v=20261116-8"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -21,6 +21,7 @@
     <nav id="summary-nav" aria-label="Разделы сводки">
       <a id="today-nav" class="current" href="#summary" aria-current="page">Сегодня</a>
       <a id="week-nav" href="#schedule">Расписание</a>
+      <a id="reminders-nav" href="#reminders" hidden>Напоминания</a>
       <a href="#tasks">Учебные дела</a>
     </nav>
     <p class="local-time">МОСКВА · UTC+3</p>
@@ -138,6 +139,26 @@
           <button id="event-save" type="submit">Сохранить</button>
           <button id="event-cancel" type="button">Отмена</button>
         </div>
+      </form>
+    </dialog>
+    <section id="reminders" class="week-view" hidden>
+      <h1>Напоминания</h1>
+      <div class="week-toolbar"><button id="reminder-new" type="button">Добавить напоминание</button><button id="reminder-all" type="button" hidden>Все напоминания</button></div>
+      <p class="week-zone">Время московское</p>
+      <p id="reminder-status" role="status"></p>
+      <div id="reminder-items" class="week-days"></div>
+    </section>
+    <dialog id="reminder-editor" class="reminder-editor" aria-labelledby="reminder-title">
+      <form id="reminder-form" class="reminder-form">
+        <h2 id="reminder-title">Напоминание</h2>
+        <label>Текст <input name="text" required maxlength="240"></label>
+        <label>Первое срабатывание <input name="starts" type="datetime-local" required></label>
+        <label>Повтор <select name="kind"><option value="once">Один раз</option><option value="hour">Каждые N часов</option><option value="day">Каждые N дней</option><option value="week">Каждые N недель</option><option value="month">Каждые N месяцев</option><option value="year">Ежегодно по дате</option></select></label>
+        <label id="reminder-interval">Интервал <input name="every" type="number" min="1" max="365" value="1"></label>
+        <fieldset id="reminder-weekdays"><legend>Дни недели</legend><div class="week-toolbar"><label><input type="checkbox" name="day" value="1">Пн</label><label><input type="checkbox" name="day" value="2">Вт</label><label><input type="checkbox" name="day" value="3">Ср</label><label><input type="checkbox" name="day" value="4">Чт</label><label><input type="checkbox" name="day" value="5">Пт</label><label><input type="checkbox" name="day" value="6">Сб</label><label><input type="checkbox" name="day" value="7">Вс</label></div></fieldset>
+        <label>Последний день серии <input name="until_day" type="date"></label>
+        <p id="reminder-form-status" role="status"></p>
+        <div class="week-toolbar"><button type="submit" id="reminder-save">Сохранить</button><button type="button" id="reminder-cancel">Отмена</button></div>
       </form>
     </dialog>
   </main>

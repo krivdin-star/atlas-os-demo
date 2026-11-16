@@ -138,7 +138,7 @@ export function setupSchedule(getSession) {
   function syncRoute() {
     const open = enabled && location.hash === '#week';
     view.hidden = !open;
-    if (enabled) digest.hidden = open;
+    if (enabled) digest.hidden = open || location.hash === '#reminders';
     nav.classList.toggle('current', open);
     home.classList.toggle('current', !open);
     if (open) {
