@@ -3,10 +3,10 @@ import qrcode from './assets/qrcode.js';
 import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
-import { setupSchedule } from './schedule.js?v=20261116-12';
+import { setupSchedule } from './schedule.js?v=20261116-17';
 import { setupReminders } from './reminders.js?v=20261116-15';
 import { setupLibrary } from './library.js?v=20261116-12';
-import { setupStudy } from './study.js?v=20261116-16';
+import { setupStudy } from './study.js?v=20261116-17';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
@@ -92,12 +92,13 @@ async function copy(input, status, message) {
   }
 }
 
-export function startAccess(showDigest) {
+export function startAccess(showDigest, clearDigest = () => {}) {
   if (!supabaseUrl || !publishableKey) return false;
 
   const route = new URL(location.href);
   const requested = route.searchParams.get('summary');
   let digestId = digestPattern.test(requested ?? '') ? requested : null;
+  let openSnapshot = Boolean(digestId);
   let session = null;
   const arrived = inviteFrom(location.href);
   if (new URLSearchParams(route.hash.slice(1)).has('pair')) {
@@ -127,12 +128,13 @@ export function startAccess(showDigest) {
   }
 
   function qrInvitationLink(code) {
-    const url = linkToDigest();
+    const url = openSnapshot ? linkToDigest() : new URL(location.pathname, location.origin);
     url.hash = new URLSearchParams({ pair: code, source: 'qr' }).toString();
     return url;
   }
 
   function locked(text, setup = true) {
+    clearDigest();
     digestView.hidden = true;
     schedule.disable();
     reminders.disable();
@@ -167,9 +169,9 @@ export function startAccess(showDigest) {
       return true;
     }
 
-    digestId = result.digest.id;
+    digestId = result.digest?.id ?? null;
     const link = linkToDigest();
-    const destination = new URL(link);
+    const destination = new URL(openSnapshot ? link : location.pathname, location.origin);
     const current = new URL(location.href);
     if (['#week', '#reminders', '#library', '#study'].includes(current.hash)) destination.hash = current.hash;
     const reminderId = current.searchParams.get('reminder');
@@ -183,7 +185,27 @@ export function startAccess(showDigest) {
     push.show(result.kind === 'phone');
     byId('make-phone-invite').hidden = result.kind !== 'pc';
     byId('summary-nav').hidden = false;
-    showDigest(result.digest);
+    showDigest(openSnapshot ? result.digest : null, {
+      work: (day, save) => rpc('atlas_work_digest', { p_session: session, p_day: day, p_save: save }, AbortSignal.timeout(10000)),
+      openEvent: async id => {
+        const event = await rpc('atlas_digest_event', { p_session: session, p_id: id }, AbortSignal.timeout(10000));
+        if (event.error) throw new Error(event.error);
+        schedule.showEvent(event);
+      },
+      openTask: study.showTask,
+      setSnapshot(id) {
+        openSnapshot = Boolean(id);
+        if (id) digestId = id;
+        const url = new URL(location.href);
+        if (id) url.searchParams.set('summary', id);
+        else url.searchParams.delete('summary');
+        history.replaceState(null, '', url);
+        savedLink.value = linkToDigest().href;
+        byId('copy-saved-link').hidden = !openSnapshot;
+        return url.href;
+      },
+    });
+    byId('copy-saved-link').hidden = !openSnapshot;
     digestView.hidden = false;
     schedule.enable();
     reminders.enable();
@@ -246,7 +268,10 @@ export function startAccess(showDigest) {
       status.textContent = 'Вставьте ссылку или код приглашения ATLAS OS.';
       return;
     }
-    if (invitation.digest) digestId = invitation.digest;
+    if (invitation.digest) {
+      digestId = invitation.digest;
+      openSnapshot = true;
+    }
     const submit = byId('pair-submit');
     submit.disabled = true;
     status.textContent = 'Проверяем приглашение…';
@@ -328,6 +353,7 @@ export function startAccess(showDigest) {
       byId('phone-qr').width = 0;
       byId('events').replaceChildren();
       byId('task-list').replaceChildren();
+      byId('planned-list').replaceChildren();
       document.querySelector('video').pause();
       locked('Устройство вышло из ATLAS OS.');
     } catch {

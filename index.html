@@ -11,8 +11,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
-  <link rel="stylesheet" href="./styles.css?v=20261116-13">
-  <script type="module" src="./app.js?v=20261116-16"></script>
+  <link rel="stylesheet" href="./styles.css?v=20261116-17">
+  <script type="module" src="./app.js?v=20261116-17"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -82,6 +82,13 @@
         <button type="button" id="next" aria-label="Следующий день">→</button>
         <button type="button" id="reset">Сегодня</button>
       </div>
+      <div class="week-toolbar">
+        <button id="save-work-digest" type="button" hidden>Сохранить сводку</button>
+        <button id="open-live-digest" type="button" hidden>К актуальной сводке</button>
+        <a id="work-digest-link" hidden>Постоянная ссылка на сводку</a>
+        <button id="retry-work-digest" type="button" hidden>Повторить загрузку</button>
+      </div>
+      <p id="work-digest-status" role="status"></p>
     </header>
     <section class="progress" aria-labelledby="progress-label">
       <span id="progress-label">Прогресс дня</span>
@@ -96,7 +103,10 @@
       </section>
       <section id="tasks" aria-labelledby="tasks-title">
         <header class="section-heading"><h2 id="tasks-title">Учебные дела</h2><span id="task-count"></span></header>
+        <h3 id="due-title" hidden>Нужно сдать</h3>
         <ul id="task-list" class="rows"></ul>
+        <h3 id="planned-title" hidden>Запланировано на сегодня</h3>
+        <ul id="planned-list" class="rows"></ul>
         <p id="no-tasks" class="empty" hidden>На этот день нет учебных дел.</p>
       </section>
     </div>
@@ -135,6 +145,7 @@
           <label>Окончание <input name="end" type="time" required></label>
         </div>
         <label>Аудитория или примечание <input name="detail" maxlength="240"></label>
+        <label><input name="important" type="checkbox"> Важное событие</label>
         <p id="event-status" role="status"></p>
         <div class="week-toolbar">
           <button id="event-save" type="submit">Сохранить</button>

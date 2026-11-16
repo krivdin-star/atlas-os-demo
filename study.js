@@ -66,6 +66,7 @@ export function setupStudy(rpc, getSession, showMaterial) {
   let changing = false;
   let items = [];
   let materials = [];
+  let requestedTask = null;
   const operations = new Map();
 
   async function request(action, item = null, data = {}) {
@@ -199,7 +200,14 @@ export function setupStudy(rpc, getSession, showMaterial) {
       if (attempt !== requestId) return;
       items = result.items;
       materials = result.materials;
+      const requested = requestedTask && items.find(item => item.id === requestedTask);
+      if (requested) section.value = requested.state === 'cancelled' ? 'done' : requested.state;
       render();
+      if (requestedTask) {
+        requestedTask = null;
+        if (requested) edit(requested);
+        else status.textContent = 'Исходная задача недоступна.';
+      }
       if (notice) status.textContent = notice;
     } catch (error) {
       if (attempt !== requestId) return;
@@ -262,12 +270,18 @@ export function setupStudy(rpc, getSession, showMaterial) {
   });
 
   return {
+    showTask(id) {
+      requestedTask = id;
+      if (location.hash === '#study') void load();
+      else location.hash = 'study';
+    },
     enable() { enabled = true; nav.hidden = false; route(); },
     disable() {
       enabled = false;
       nav.hidden = true;
       items = [];
       materials = [];
+      requestedTask = null;
       operations.clear();
       if (editor.open) editor.close();
       list.replaceChildren();

@@ -66,6 +66,7 @@ export function setupSchedule(getSession) {
     for (const key of ['day', 'start', 'end', 'kind', 'title', 'detail']) {
       form.elements.namedItem(key).value = event[key];
     }
+    form.elements.namedItem('important').checked = Boolean(event.important);
     formStatus.textContent = '';
     editor.showModal();
   }
@@ -89,6 +90,7 @@ export function setupSchedule(getSession) {
           button.type = 'button';
           button.append(node('span', e.start + '–' + e.end, 'event-time'), node('strong', e.title));
           button.append(node('small', [e.kind === 'class' ? 'Пара' : 'Встреча', e.detail].filter(Boolean).join(' · ')));
+          if (e.important) button.append(node('small', 'Важно', 'event-overlap'));
           if (overlap) button.append(node('small', 'Пересечение по времени', 'event-overlap'));
           button.addEventListener('click', () => edit(e));
           item.append(button);
@@ -167,7 +169,7 @@ export function setupSchedule(getSession) {
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const fields = Object.fromEntries(new FormData(form));
+    const fields = { ...Object.fromEntries(new FormData(form)), important: form.elements.namedItem('important').checked };
     if (fields.start >= fields.end || !fields.title.trim()) {
       formStatus.textContent = message.invalid_event;
       return;
@@ -192,6 +194,12 @@ export function setupSchedule(getSession) {
   });
 
   return {
+    showEvent(event) {
+      if (!enabled) return;
+      go(event.day);
+      location.hash = 'week';
+      edit(event);
+    },
     enable() {
       enabled = true;
       nav.href = '#week';
