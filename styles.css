@@ -166,3 +166,9 @@ button:disabled { cursor: wait; opacity: .65; }
 #library-reader-text { white-space: pre-wrap; overflow-wrap: anywhere; }
 #library-items article, #library-reader-title { overflow-wrap: anywhere; }
 #library-new, #library-save { background: var(--yellow); }
+
+#study-section { min-height: 38px; font-size: 16px; }
+#study-items article { overflow-wrap: anywhere; }
+#study-form label { min-width: 0; }
+#study-form input, #study-form select { min-width: 0; }
+#study-new, #study-save { background: var(--yellow); }

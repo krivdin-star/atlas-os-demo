@@ -11,8 +11,8 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
-  <link rel="stylesheet" href="./styles.css?v=20261116-10">
-  <script type="module" src="./app.js?v=20261116-11"></script>
+  <link rel="stylesheet" href="./styles.css?v=20261116-12">
+  <script type="module" src="./app.js?v=20261116-12"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -23,7 +23,7 @@
       <a id="week-nav" href="#schedule">Расписание</a>
       <a id="reminders-nav" href="#reminders" hidden>Напоминания</a>
       <a id="library-nav" href="#library" hidden>Материалы</a>
-      <a href="#tasks">Учебные дела</a>
+      <a id="study-nav" href="#study" hidden>Учебные дела</a>
     </nav>
     <p class="local-time">МОСКВА · UTC+3</p>
   </aside>
@@ -206,6 +206,39 @@
         <a id="library-download" target="_blank" rel="noopener noreferrer" hidden>Скачать файл</a>
         <button id="library-reader-close" type="button">Закрыть</button>
       </div>
+    </dialog>
+    <section id="study" class="week-view" aria-labelledby="study-title" hidden>
+      <h1 id="study-title">Учебные дела</h1>
+      <div class="week-toolbar">
+        <button id="study-new" type="button">Добавить задачу</button>
+        <label>Раздел <select id="study-section">
+          <option value="active">Текущие</option>
+          <option value="draft">Черновики</option>
+          <option value="done">История</option>
+        </select></label>
+        <button id="study-retry" type="button" hidden>Повторить</button>
+      </div>
+      <p class="week-zone">Время московское</p>
+      <p id="study-status" role="status"></p>
+      <div id="study-items" class="week-days"></div>
+    </section>
+    <dialog id="study-editor" class="reminder-editor" aria-labelledby="study-editor-title">
+      <form id="study-form" class="reminder-form">
+        <h2 id="study-editor-title">Учебная задача</h2>
+        <label>Название <input name="title" maxlength="160" required></label>
+        <label>Предмет <input name="subject" maxlength="120"></label>
+        <label>Сдать до <input name="due_at" type="datetime-local" min="2000-01-01T00:00" max="2099-12-31T23:59"></label>
+        <label>Когда займусь <input name="planned_at" type="datetime-local" min="2000-01-01T00:00" max="2099-12-31T23:59"></label>
+        <label>Оценка времени, мин <input name="estimate_minutes" type="number" min="1" max="10080"></label>
+        <label>Фактически потрачено, мин <input name="actual_minutes" type="number" min="1" max="10080"></label>
+        <label>Источник <input name="source" maxlength="240"></label>
+        <label>Материал <select name="material_id"></select></label>
+        <p id="study-form-status" role="status"></p>
+        <div class="week-toolbar">
+          <button id="study-save" type="submit">Сохранить</button>
+          <button id="study-cancel" type="button">Отмена</button>
+        </div>
+      </form>
     </dialog>
   </main>
 </body>

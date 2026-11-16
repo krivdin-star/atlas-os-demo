@@ -36,6 +36,7 @@ export function setupLibrary(getSession) {
   let loadId = 0;
   let readerId = 0;
   let items = [];
+  let requestedMaterial = null;
   let target = null;
   let changing = false;
 
@@ -147,7 +148,14 @@ export function setupLibrary(getSession) {
       const result = await request('list');
       if (attempt !== loadId) return;
       items = result.items;
+      const requested = items.find(item => item.id === requestedMaterial);
+      if (requested) section.value = requested.state;
       render();
+      if (requestedMaterial) {
+        requestedMaterial = null;
+        if (requested?.versions.length) void open(requested, requested.versions[0]);
+        else status.textContent = 'Материал недоступен.';
+      }
       if (notice) status.textContent = notice;
     } catch (error) {
       if (attempt !== loadId) return;
@@ -223,11 +231,17 @@ export function setupLibrary(getSession) {
   });
 
   return {
+    showMaterial(id) {
+      requestedMaterial = id;
+      if (location.hash === '#library') void load();
+      else location.hash = 'library';
+    },
     enable() { enabled = true; nav.hidden = false; route(); },
     disable() {
       enabled = false;
       nav.hidden = true;
       items = [];
+      requestedMaterial = null;
       list.replaceChildren();
       if (editor.open) editor.close();
       if (reader.open) reader.close();

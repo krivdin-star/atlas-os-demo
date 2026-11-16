@@ -3,9 +3,10 @@ import qrcode from './assets/qrcode.js';
 import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
-import { setupSchedule } from './schedule.js?v=20261116-10';
+import { setupSchedule } from './schedule.js?v=20261116-12';
 import { setupReminders } from './reminders.js?v=20261116-9';
-import { setupLibrary } from './library.js?v=20261116-11';
+import { setupLibrary } from './library.js?v=20261116-12';
+import { setupStudy } from './study.js?v=20261116-12';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
@@ -21,11 +22,12 @@ const errors = {
 };
 const networkError = 'Сервер недоступен. Проверьте соединение и повторите попытку.';
 
-async function rpc(name, values) {
+async function rpc(name, values, signal) {
   const response = await fetch(supabaseUrl + '/rest/v1/rpc/' + name, {
     method: 'POST',
     headers: { apikey: publishableKey, 'Content-Type': 'application/json' },
     body: JSON.stringify(values),
+    signal,
     cache: 'no-store',
     referrerPolicy: 'no-referrer',
   });
@@ -116,6 +118,7 @@ export function startAccess(showDigest) {
   const schedule = setupSchedule(() => session);
   const reminders = setupReminders(rpc, () => session);
   const library = setupLibrary(() => session);
+  const study = setupStudy(rpc, () => session, library.showMaterial);
 
   function linkToDigest() {
     const url = new URL(location.pathname, location.origin);
@@ -134,6 +137,7 @@ export function startAccess(showDigest) {
     schedule.disable();
     reminders.disable();
     library.disable();
+    study.disable();
     controls.hidden = true;
     push.show(false);
     controls.open = false;
@@ -167,7 +171,7 @@ export function startAccess(showDigest) {
     const link = linkToDigest();
     const destination = new URL(link);
     const current = new URL(location.href);
-    if (['#week', '#reminders', '#library'].includes(current.hash)) destination.hash = current.hash;
+    if (['#week', '#reminders', '#library', '#study'].includes(current.hash)) destination.hash = current.hash;
     const reminderId = current.searchParams.get('reminder');
     if (current.hash === '#reminders' && digestPattern.test(reminderId ?? '')) {
       destination.searchParams.set('reminder', reminderId);
@@ -184,6 +188,7 @@ export function startAccess(showDigest) {
     schedule.enable();
     reminders.enable();
     library.enable();
+    study.enable();
     return true;
   }
 
