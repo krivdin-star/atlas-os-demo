@@ -5,7 +5,7 @@ import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
 import { setupSchedule } from './schedule.js?v=20261116-10';
 import { setupReminders } from './reminders.js?v=20261116-9';
-import { setupLibrary } from './library.js?v=20261116-10';
+import { setupLibrary } from './library.js?v=20261116-11';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;

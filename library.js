@@ -4,6 +4,7 @@ const byId = id => document.getElementById(id);
 const labels = {
   unauthorized: 'Сеанс истёк. Откройте ATLAS OS заново.',
   unsupported_file: 'Выберите PDF, Markdown в UTF-8, JPEG или PNG.',
+  invalid_pdf: 'PDF повреждён или загружен не полностью. Выберите исправный файл.',
   too_large: 'Размер файла превышает 6 МБ.',
   invalid_metadata: 'Проверьте название, предмет и источник.',
   not_found: 'Материал недоступен. Обновите список.',
