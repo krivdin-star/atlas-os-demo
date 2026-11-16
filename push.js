@@ -31,7 +31,7 @@ export function setupPush({ rpc, getSession, getDigest }) {
 
   // Starting the worker early leaves the permission request in the direct click handler.
   const worker = supported
-    ? navigator.serviceWorker.register('./sw.js').then(() => navigator.serviceWorker.ready).catch(() => null)
+    ? navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(() => navigator.serviceWorker.ready).catch(() => null)
     : Promise.resolve(null);
 
   async function refresh() {

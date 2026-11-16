@@ -1,4 +1,4 @@
-import { startAccess } from './access.js?v=20261116-2';
+import { startAccess } from './access.js?v=20261116-3';
 
 const moscowDate = new Intl.DateTimeFormat('en', {
   year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Moscow',

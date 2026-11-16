@@ -2,6 +2,7 @@ import { supabaseUrl, publishableKey } from './access-config.js';
 import qrcode from './assets/qrcode.js';
 import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
+import { createDigestLoader } from './digest-loader.js';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
@@ -131,6 +132,7 @@ export function startAccess(showDigest) {
     byId('summary-nav').hidden = true;
     byId('access-panel').hidden = false;
     form.hidden = !setup;
+    byId('access-title').textContent = setup ? 'Вход в ATLAS OS' : 'Сохранённая сводка';
     status.textContent = text;
   }
 
@@ -139,8 +141,7 @@ export function startAccess(showDigest) {
     session = null;
   }
 
-  async function openDigest(initial = false) {
-    const result = await requestDigest(supabaseUrl, session, digestId);
+  function applyDigest(result, initial) {
     if (result.error === 'unauthorized') {
       if (!initial) return false;
       forgetSession();
@@ -167,25 +168,42 @@ export function startAccess(showDigest) {
     return true;
   }
 
-  async function refresh(initial) {
-    byId('retry-access').hidden = true;
-    locked('Открываем сохранённую сводку…', false);
-    try {
-      return await openDigest(initial);
-    } catch (error) {
+  const loader = createDigestLoader({
+    visible: () => document.visibilityState !== 'hidden',
+    start() {
+      locked('Открываем сохранённую сводку…', false);
+      byId('retry-access').hidden = false;
+    },
+    read: (signal) => requestDigest(supabaseUrl, session, digestId, 8000, signal),
+    loaded(result) {
+      byId('retry-access').hidden = true;
+      applyDigest(result, true);
+    },
+    failed(error) {
       const text = error instanceof DigestTimeoutError
         ? 'Сводка не загрузилась за 8 секунд. Проверьте сеть и нажмите «Повторить».'
         : networkError;
       locked(text, false);
       byId('retry-access').hidden = false;
-      return false;
-    }
+    },
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') loader.pause();
+    else loader.resume();
+  });
+  window.addEventListener('pagehide', loader.pause);
+  window.addEventListener('pageshow', loader.resume);
+  window.addEventListener('focus', loader.resume);
+
+  async function openDigest() {
+    return applyDigest(await requestDigest(supabaseUrl, session, digestId), false);
   }
 
   byId('access-panel').hidden = false;
   digestView.hidden = true;
   byId('summary-nav').hidden = true;
-  byId('retry-access').addEventListener('click', () => void refresh(true));
+  byId('retry-access').addEventListener('click', () => void loader.refresh());
 
   if (arrived) input.value = arrived.code;
   if (arrived?.fromQr) {
@@ -227,7 +245,7 @@ export function startAccess(showDigest) {
         return;
       }
       input.value = '';
-      await refresh(true);
+      await loader.refresh();
     } catch {
       status.textContent = networkError;
     } finally {
@@ -297,7 +315,7 @@ export function startAccess(showDigest) {
 
   try {
     session = localStorage.getItem(sessionKey);
-    if (session) void refresh(true);
+    if (session) void loader.refresh();
     else locked(arrived ? 'Ссылка готова к привязке.' : 'Откройте личную ссылку или вставьте приглашение.');
   } catch {
     locked('Для привязки устройству нужно разрешить хранение данных сайта.', false);

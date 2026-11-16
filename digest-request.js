@@ -1,7 +1,10 @@
 export class DigestTimeoutError extends Error {}
 
-export async function requestDigest(baseUrl, session, digest, timeoutMs = 8000) {
+export async function requestDigest(baseUrl, session, digest, timeoutMs = 8000, signal) {
   const controller = new AbortController();
+  if (signal?.aborted) throw signal.reason;
+  const cancel = () => controller.abort();
+  signal?.addEventListener('abort', cancel, { once: true });
   let timer;
   const deadline = new Promise((_, reject) => {
     timer = setTimeout(() => {
@@ -24,5 +27,6 @@ export async function requestDigest(baseUrl, session, digest, timeoutMs = 8000) 
     return await Promise.race([deadline, request()]);
   } finally {
     clearTimeout(timer);
+    signal?.removeEventListener('abort', cancel);
   }
 }

@@ -22,6 +22,8 @@ self.addEventListener('notificationclick', (event) => {
   const digest = event.notification.data?.digest;
   const target = new URL(self.registration.scope);
   if (digestPattern.test(digest ?? '')) target.searchParams.set('summary', digest);
+  // The lock-screen launch must fetch the current shell instead of a stale copy.
+  target.searchParams.set('launch', String(Date.now()));
   event.waitUntil((async () => {
     const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     const current = clients.find((client) => {
