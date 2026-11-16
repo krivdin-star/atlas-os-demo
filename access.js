@@ -37,9 +37,16 @@ function inviteFrom(value) {
   try {
     const url = new URL(text);
     if (url.origin !== location.origin || url.pathname !== location.pathname) return null;
-    const code = new URLSearchParams(url.hash.slice(1)).get('pair');
+    const fragment = new URLSearchParams(url.hash.slice(1));
+    const code = fragment.get('pair');
     const digest = url.searchParams.get('summary');
-    if (code && secretPattern.test(code)) return { code, digest: digestPattern.test(digest ?? '') ? digest : null };
+    if (code && secretPattern.test(code)) {
+      return {
+        code,
+        digest: digestPattern.test(digest ?? '') ? digest : null,
+        fromQr: fragment.get('source') === 'qr',
+      };
+    }
   } catch {
     return null;
   }
@@ -106,6 +113,12 @@ export function startAccess(showDigest) {
     return url;
   }
 
+  function qrInvitationLink(code) {
+    const url = linkToDigest();
+    url.hash = new URLSearchParams({ pair: code, source: 'qr' }).toString();
+    return url;
+  }
+
   function locked(text, setup = true) {
     digestView.hidden = true;
     controls.hidden = true;
@@ -166,14 +179,12 @@ export function startAccess(showDigest) {
   byId('summary-nav').hidden = true;
   byId('retry-access').addEventListener('click', () => void refresh(true));
 
-  if (arrived) {
-    input.value = arrived.code;
+  if (arrived) input.value = arrived.code;
+  if (arrived?.fromQr) {
     byId('forward-invite').hidden = false;
     byId('copy-arrived-invite').addEventListener('click', () => {
-      const invitation = linkToDigest();
-      invitation.hash = 'pair=' + arrived.code;
       const clipboardInput = byId('arrived-invite-url');
-      clipboardInput.value = invitation.href;
+      clipboardInput.value = qrInvitationLink(arrived.code).href;
       void copy(clipboardInput, status, 'Приглашение скопировано. Вставьте его в ATLAS OS с домашнего экрана.');
     });
   }
@@ -232,9 +243,7 @@ export function startAccess(showDigest) {
         return;
       }
       if (!controls.open) return;
-      const link = linkToDigest();
-      link.hash = 'pair=' + result.code;
-      drawQr(byId('phone-qr'), link.href);
+      drawQr(byId('phone-qr'), qrInvitationLink(result.code).href);
       byId('invite-expires').textContent = 'Действует до ' + new Intl.DateTimeFormat('ru-RU', {
         hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Moscow',
       }).format(new Date(result.expires_at)) + ' по Москве.';
