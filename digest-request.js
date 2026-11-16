@@ -1,6 +1,10 @@
 export class DigestTimeoutError extends Error {}
 
-export async function requestDigest(baseUrl, session, digest, timeoutMs = 8000, signal) {
+export function requestDigest(baseUrl, session, digest, timeoutMs = 8000, signal) {
+  return requestAtlas(baseUrl, 'atlas-read-digest', { session, digest }, timeoutMs, signal);
+}
+
+export async function requestAtlas(baseUrl, functionName, values, timeoutMs = 8000, signal) {
   const controller = new AbortController();
   if (signal?.aborted) throw signal.reason;
   const cancel = () => controller.abort();
@@ -13,10 +17,10 @@ export async function requestDigest(baseUrl, session, digest, timeoutMs = 8000, 
     }, timeoutMs);
   });
   const request = async () => {
-    const response = await fetch(baseUrl + '/functions/v1/atlas-read-digest', {
+    const response = await fetch(baseUrl + '/functions/v1/' + functionName, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-      body: JSON.stringify({ session, digest }),
+      body: JSON.stringify(values),
       referrerPolicy: 'no-referrer',
       signal: controller.signal,
     });

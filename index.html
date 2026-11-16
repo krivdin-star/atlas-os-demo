@@ -12,15 +12,15 @@
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
   <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./app.js?v=20261116-3"></script>
+  <script type="module" src="./app.js?v=20261116-4"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
   <aside class="sidebar">
     <a class="brand" href="#summary"><img src="./assets/icon-192.png" alt="" width="32" height="32"> ATLAS OS</a>
     <nav id="summary-nav" aria-label="Разделы сводки">
-      <a class="current" href="#summary" aria-current="page">Сегодня</a>
-      <a href="#schedule">Расписание</a>
+      <a id="today-nav" class="current" href="#summary" aria-current="page">Сегодня</a>
+      <a id="week-nav" href="#schedule">Расписание</a>
       <a href="#tasks">Учебные дела</a>
     </nav>
     <p class="local-time">МОСКВА · UTC+3</p>
@@ -105,6 +105,38 @@
       </video>
     </section>
     </div>
+    <section id="week" class="week-view" aria-labelledby="week-title" hidden>
+      <h1 id="week-title">Расписание</h1>
+      <div class="week-toolbar">
+        <button id="week-previous" type="button" aria-label="Предыдущая неделя">←</button>
+        <span id="week-range" aria-live="polite"></span>
+        <button id="week-next" type="button" aria-label="Следующая неделя">→</button>
+        <button id="week-reset" type="button">Текущая неделя</button>
+        <button id="event-new" type="button">Добавить событие</button>
+      </div>
+      <p class="week-zone">Время московское</p>
+      <p id="week-status" role="status"></p>
+      <button id="week-retry" type="button" hidden>Повторить</button>
+      <div id="week-days" class="week-days"></div>
+    </section>
+    <dialog id="event-editor" aria-labelledby="event-title">
+      <form id="event-form">
+        <h2 id="event-title">Новое событие</h2>
+        <label>Тип <select name="kind"><option value="meeting">Встреча</option><option value="class">Пара</option></select></label>
+        <label>Название <input name="title" maxlength="120" required></label>
+        <label>Дата <input name="day" type="date" min="2000-01-03" max="2099-12-31" required></label>
+        <div class="event-hours">
+          <label>Начало <input name="start" type="time" required></label>
+          <label>Окончание <input name="end" type="time" required></label>
+        </div>
+        <label>Аудитория или примечание <input name="detail" maxlength="240"></label>
+        <p id="event-status" role="status"></p>
+        <div class="week-toolbar">
+          <button id="event-save" type="submit">Сохранить</button>
+          <button id="event-cancel" type="button">Отмена</button>
+        </div>
+      </form>
+    </dialog>
   </main>
 </body>
 </html>

@@ -125,3 +125,29 @@ button:disabled { cursor: wait; opacity: .65; }
 .push-actions label { font: 600 12px var(--mono); }
 .push-actions select { max-width: 100%; min-height: 38px; color: var(--ink); background: var(--panel); font-size: 16px; }
 #push-status { margin: 0; }
+
+.week-view { max-width: 1270px; margin-inline: auto; }
+.week-view h1 { font-size: clamp(30px, 6vw, 73px); overflow-wrap: anywhere; }
+.week-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.week-view > .week-toolbar { border-top: 2px solid var(--ink); margin-top: 18px; padding-top: 14px; }
+#week-range { font: 600 13px var(--mono); }
+#event-new, #event-save { background: var(--yellow); }
+.week-zone { font: 600 12px var(--mono); color: var(--muted); }
+.week-days { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.week-day { min-width: 0; border-top: 2px solid var(--ink); padding-top: 10px; }
+.week-day h2 { font-size: 16px; }
+.week-empty { color: var(--muted); font-size: 13px; }
+.week-events { padding: 0; display: grid; gap: 7px; list-style: none; }
+.schedule-event { display: grid; text-align: left; gap: 4px; width: 100%; min-width: 0; padding: 9px; box-shadow: none; border: 1px solid var(--line); font: inherit; overflow-wrap: anywhere; }
+.schedule-event strong { font-size: 15px; }
+.schedule-event small { color: var(--muted); }
+.event-time, .event-overlap { font: 600 12px var(--mono); }
+.schedule-event .event-overlap { color: #6f270b; }
+#event-editor { width: min(460px, calc(100% - 24px)); max-height: 90vh; padding: 18px; color: var(--ink); background: var(--panel); border: 2px solid var(--ink); }
+#event-editor::backdrop { background: #1b1b1880; }
+#event-form { display: grid; gap: 12px; }
+#event-form label { min-width: 0; display: grid; gap: 4px; font: 600 12px var(--mono); }
+#event-form input, #event-form select { width: 100%; min-width: 0; min-height: 40px; font-size: 16px; color: var(--ink); background: white; border: 1px solid var(--line); }
+.event-hours { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+#event-status:empty, #week-status:empty { display: none; }
+@media (max-width: 680px) { .week-days { grid-template-columns: 1fr; } }
