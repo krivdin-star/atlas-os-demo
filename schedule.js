@@ -2,12 +2,17 @@ import { supabaseUrl } from './access-config.js';
 import { requestAtlas } from './digest-request.js';
 
 const byId = id => document.getElementById(id);
-const dateFormat = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+const dateFormat = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 const dayFormat = new Intl.DateTimeFormat('ru-RU', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
 const moscowDate = new Intl.DateTimeFormat('en', {
   year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Moscow',
 });
-const time = new Intl.DateTimeFormat('ru-RU', { year: 'numeric', timeZone: 'UTC' });
+const firstStudyWeek = '2026-11-09'; // 11-я неделя по утверждённому расписанию.
+const studyWeeks = [
+  'Одиннадцатая', 'Двенадцатая', 'Тринадцатая', 'Четырнадцатая',
+  'Пятнадцатая', 'Шестнадцатая', 'Семнадцатая', 'Восемнадцатая',
+];
+const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
 const message = {
   unauthorized: 'Сеанс истёк. Откройте ATLAS OS заново.',
   invalid_event: 'Проверьте дату, название и время. Окончание должно быть позже начала.',
@@ -104,7 +109,10 @@ export function setupSchedule(getSession) {
     const attempt = ++requestNumber;
     const chosen = monday;
     const last = new Date(shift(chosen, 6));
-    byId('week-range').textContent = dateFormat.format(new Date(chosen)) + ' — ' + dateFormat.format(last) + ' ' + time.format(last);
+    byId('week-range').textContent = dateFormat.formatRange(new Date(chosen), last);
+    const ordinal = studyWeeks[(Date.parse(chosen) - Date.parse(firstStudyWeek)) / millisecondsPerWeek];
+    byId('week-number').textContent = ordinal ? ordinal + ' неделя' : '';
+    byId('week-number').hidden = !ordinal;
     weekStatus.textContent = 'Загружаем расписание…';
     byId('week-retry').hidden = true;
     weekDays.replaceChildren();

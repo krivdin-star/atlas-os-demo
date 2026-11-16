@@ -3,7 +3,7 @@ import qrcode from './assets/qrcode.js';
 import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
-import { setupSchedule } from './schedule.js';
+import { setupSchedule } from './schedule.js?v=20261116-5';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;

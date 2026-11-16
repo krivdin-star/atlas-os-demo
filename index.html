@@ -12,7 +12,7 @@
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
   <link rel="stylesheet" href="./styles.css">
-  <script type="module" src="./app.js?v=20261116-4"></script>
+  <script type="module" src="./app.js?v=20261116-5"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -109,7 +109,10 @@
       <h1 id="week-title">Расписание</h1>
       <div class="week-toolbar">
         <button id="week-previous" type="button" aria-label="Предыдущая неделя">←</button>
-        <span id="week-range" aria-live="polite"></span>
+        <span class="week-caption" aria-live="polite">
+          <span id="week-range"></span>
+          <span id="week-number" hidden></span>
+        </span>
         <button id="week-next" type="button" aria-label="Следующая неделя">→</button>
         <button id="week-reset" type="button">Текущая неделя</button>
         <button id="event-new" type="button">Добавить событие</button>

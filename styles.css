@@ -130,7 +130,9 @@ button:disabled { cursor: wait; opacity: .65; }
 .week-view h1 { font-size: clamp(30px, 6vw, 73px); overflow-wrap: anywhere; }
 .week-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .week-view > .week-toolbar { border-top: 2px solid var(--ink); margin-top: 18px; padding-top: 14px; }
+.week-caption { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 6px; min-width: 0; }
 #week-range { font: 600 13px var(--mono); }
+#week-number { padding: 4px 6px; border: 1px solid var(--ink); background: var(--yellow); font: 600 11px var(--mono); }
 #event-new, #event-save { background: var(--yellow); }
 .week-zone { font: 600 12px var(--mono); color: var(--muted); }
 .week-days { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
