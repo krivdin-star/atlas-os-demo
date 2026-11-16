@@ -4,9 +4,9 @@ import { setupPush } from './push.js';
 import { DigestTimeoutError, requestDigest } from './digest-request.js';
 import { createDigestLoader } from './digest-loader.js';
 import { setupSchedule } from './schedule.js?v=20261116-12';
-import { setupReminders } from './reminders.js?v=20261116-9';
+import { setupReminders } from './reminders.js?v=20261116-14';
 import { setupLibrary } from './library.js?v=20261116-12';
-import { setupStudy } from './study.js?v=20261116-13';
+import { setupStudy } from './study.js?v=20261116-14';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;

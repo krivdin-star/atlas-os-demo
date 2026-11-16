@@ -7,9 +7,10 @@ const fieldNames = {
   planned_phrase: 'Фраза для пожелания', due_zone: 'Пояс срока', planned_zone: 'Пояс пожелания',
   estimate_minutes: 'Оценка, мин', actual_minutes: 'Фактически, мин', material_id: 'Материал', state: 'Статус',
 };
-const actions = { save: 'Сохранение', done: 'Завершение', skip: 'Пропуск', undo: 'Отмена правки' };
-const states = { draft: 'Черновик', active: 'Текущая', done: 'Выполнена', skipped: 'Пропущена' };
-const sections = { active: 'Текущих задач пока нет.', draft: 'Черновиков больше нет.', done: 'Выполненных задач пока нет.' };
+const actions = { save: 'Сохранение', done: 'Завершение', skip: 'Пропуск', undo: 'Отмена правки',
+  cancel: 'Отмена задачи', reopen: 'Возврат в работу' };
+const states = { draft: 'Черновик', active: 'Текущая', done: 'Выполнена', skipped: 'Пропущена', cancelled: 'Отменена' };
+const sections = { active: 'Текущих задач пока нет.', draft: 'Черновиков больше нет.', done: 'История задач пуста.' };
 const errors = {
   unauthorized: 'Сеанс истёк. Откройте ATLAS OS заново.',
   conflict: 'Задача уже изменилась. Обновите список и повторите действие.',
@@ -138,6 +139,7 @@ export function setupStudy(rpc, getSession, showMaterial) {
     const card = node('article', '');
     card.className = 'week-day';
     card.append(node('h2', item.title));
+    if (['done', 'cancelled'].includes(item.state)) card.append(node('p', states[item.state]));
     if (item.subject) card.append(node('p', item.subject));
     if (item.study_week) card.append(node('p', weekLabel(item.study_week)));
     if (item.due_at) card.append(node('p', 'Сдать до: ' + formatTime(item.due_at)));
@@ -154,7 +156,13 @@ export function setupStudy(rpc, getSession, showMaterial) {
     actions.className = 'week-toolbar';
     actions.append(button(item.state === 'draft' ? 'Проверить и добавить' : 'Изменить', () => edit(item)));
     if (item.state === 'draft') actions.append(button('Пропустить', () => void change('skip', item)));
-    if (item.state === 'active') actions.append(button('Завершить', () => void change('done', item)));
+    if (item.state === 'active') {
+      actions.append(button('Завершить', () => void change('done', item)),
+        button('Отменить задачу', () => void change('cancel', item)));
+    }
+    if (['done', 'cancelled'].includes(item.state)) {
+      actions.append(button(item.state === 'done' ? 'Отменить завершение' : 'Вернуть в работу', () => void change('reopen', item)));
+    }
     if (item.material_id) actions.append(button('Материал: ' + item.material_title, () => showMaterial(item.material_id)));
     card.append(actions);
     if (item.moves.length) {
@@ -169,7 +177,8 @@ export function setupStudy(rpc, getSession, showMaterial) {
   }
 
   function render() {
-    const cards = items.filter(item => item.state === section.value).map(makeCard);
+    const cards = items.filter(item => item.state === section.value ||
+      (section.value === 'done' && item.state === 'cancelled')).map(makeCard);
     const drafts = items.filter(item => item.state === 'draft').length;
     section.querySelector('[value=draft]').textContent = drafts ? 'Черновики (' + drafts + ')' : 'Черновики';
     list.replaceChildren(...cards);
@@ -199,7 +208,8 @@ export function setupStudy(rpc, getSession, showMaterial) {
     changing = true;
     try {
       await mutate(action, item);
-      const notices = { done: 'Задача перенесена в историю.', skip: 'Черновик пропущен.', undo: 'Правка отменена.' };
+      const notices = { done: 'Задача перенесена в историю.', skip: 'Черновик пропущен.', undo: 'Правка отменена.',
+        cancel: 'Задача отменена.', reopen: 'Задача возвращена в работу. Проверь её блок и напоминания.' };
       await load(notices[action]);
     } catch (error) {
       status.textContent = errors[error.message] ?? 'Не удалось выполнить действие.';
