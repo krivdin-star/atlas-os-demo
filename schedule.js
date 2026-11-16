@@ -110,7 +110,7 @@ export function setupSchedule(getSession) {
     byId('week-range').textContent = dateFormat.formatRange(new Date(chosen), last);
     const covered = chosen >= firstStudyWeek && chosen <= lastStudyWeek;
     const weekNumber = firstStudyWeekNumber + (Date.parse(chosen) - Date.parse(firstStudyWeek)) / millisecondsPerWeek;
-    byId('week-number').textContent = covered ? '(' + weekNumber + ' неделя)' : '';
+    byId('week-number').textContent = covered ? weekNumber + ' неделя' : '';
     byId('week-number').hidden = !covered;
     weekStatus.textContent = 'Загружаем расписание…';
     byId('week-retry').hidden = true;
