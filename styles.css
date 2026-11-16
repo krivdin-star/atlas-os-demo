@@ -118,3 +118,10 @@ progress::-moz-progress-bar { background: var(--ink); }
 #phone-qr { display: block; max-width: 100%; height: auto; }
 button:disabled { cursor: wait; opacity: .65; }
 .task label:has(:disabled), .task input:disabled { cursor: default; opacity: 1; }
+
+.push-tools { width: 100%; }
+.push-tools summary { width: fit-content; }
+.push-actions { display: grid; justify-items: start; gap: 8px; margin-block: 8px; }
+.push-actions label { font: 600 12px var(--mono); }
+.push-actions select { max-width: 100%; min-height: 38px; color: var(--ink); background: var(--panel); font-size: 16px; }
+#push-status { margin: 0; }

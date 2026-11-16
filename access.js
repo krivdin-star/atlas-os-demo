@@ -1,5 +1,6 @@
 import { supabaseUrl, publishableKey } from './access-config.js';
 import qrcode from './assets/qrcode.js';
+import { setupPush } from './push.js';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
@@ -106,6 +107,7 @@ export function startAccess(showDigest) {
   const phoneInvite = byId('phone-invite');
   const savedLink = byId('saved-link');
   const message = (value, fallback) => errors[value] ?? fallback;
+  const push = setupPush({ rpc, getSession: () => session, getDigest: () => digestId });
 
   function linkToDigest() {
     const url = new URL(location.pathname, location.origin);
@@ -122,6 +124,7 @@ export function startAccess(showDigest) {
   function locked(text, setup = true) {
     digestView.hidden = true;
     controls.hidden = true;
+    push.show(false);
     controls.open = false;
     phoneInvite.hidden = true;
     byId('summary-nav').hidden = true;
@@ -155,6 +158,7 @@ export function startAccess(showDigest) {
     savedLink.value = link.href;
     byId('access-panel').hidden = true;
     controls.hidden = false;
+    push.show(result.kind === 'phone');
     byId('make-phone-invite').hidden = result.kind !== 'pc';
     byId('summary-nav').hidden = false;
     showDigest(result.digest);
@@ -258,6 +262,7 @@ export function startAccess(showDigest) {
   byId('copy-saved-link').addEventListener('click', () => void copy(savedLink, sessionStatus, 'Ссылка на сводку скопирована.'));
   controls.addEventListener('toggle', () => {
     if (controls.open) return;
+    push.close();
     phoneInvite.hidden = true;
     savedLink.hidden = true;
     byId('phone-qr').width = 0;
@@ -269,6 +274,7 @@ export function startAccess(showDigest) {
     button.disabled = true;
     try {
       await rpc('atlas_logout', { p_session: session });
+      void push.unsubscribe().catch(() => {});
       forgetSession();
       byId('forward-invite').hidden = true;
       byId('arrived-invite-url').value = '';

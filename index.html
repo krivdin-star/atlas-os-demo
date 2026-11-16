@@ -52,6 +52,19 @@
           <button type="button" id="logout">Выйти</button>
           <input id="saved-link" aria-label="Постоянная ссылка на сводку" readonly hidden>
           <p id="session-status" role="status"></p>
+          <details id="push-tools" class="push-tools" hidden>
+            <summary>Уведомления</summary>
+            <div class="push-actions">
+              <button type="button" id="push-enable" disabled>Включить уведомления</button>
+              <label for="push-variant">Текст пробного уведомления</label>
+              <select id="push-variant">
+                <option value="default">Карта вашего дня</option>
+                <option value="short">Краткое содержание</option>
+              </select>
+              <button type="button" id="push-send" disabled>Отправить пробное уведомление</button>
+              <p id="push-status" role="status"></p>
+            </div>
+          </details>
           <div id="phone-invite" class="phone-invite" hidden>
             <h2>Привязка iPhone</h2>
             <p>Отсканируйте QR камерой. В Safari скопируйте приглашение и вставьте его в ATLAS OS с домашнего экрана.</p>
