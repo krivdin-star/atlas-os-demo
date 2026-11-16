@@ -12,7 +12,7 @@
   <link rel="icon" href="./assets/icon-192.png">
   <link rel="apple-touch-icon" href="./assets/icon-180.png">
   <link rel="stylesheet" href="./styles.css?v=20261116-18">
-  <script type="module" src="./app.js?v=20261116-19"></script>
+  <script type="module" src="./app.js?v=20261116-20"></script>
 </head>
 <body>
   <a class="skip" href="#summary">К сводке</a>
@@ -86,9 +86,15 @@
         <button id="save-work-digest" type="button" hidden>Сохранить сводку</button>
         <button id="open-live-digest" type="button" hidden>К актуальной сводке</button>
         <a id="work-digest-link" hidden>Постоянная ссылка на сводку</a>
+        <a id="morning-digest-link" hidden>Утренняя сводка</a>
         <button id="retry-work-digest" type="button" hidden>Повторить загрузку</button>
       </div>
       <p id="work-digest-status" role="status"></p>
+      <details id="morning-digest-log" hidden>
+        <summary>Журнал утренней отправки</summary>
+        <p id="morning-digest-times"></p>
+        <ul id="morning-digest-attempts"></ul>
+      </details>
     </header>
     <section class="progress" aria-labelledby="progress-label">
       <span id="progress-label">Прогресс дня</span>

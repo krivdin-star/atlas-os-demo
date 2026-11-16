@@ -12,6 +12,17 @@ const status = byId('work-digest-status');
 const save = byId('save-work-digest');
 const retry = byId('retry-work-digest');
 const permanentLink = byId('work-digest-link');
+const morningLink = byId('morning-digest-link');
+const morningLog = byId('morning-digest-log');
+const moscowTime = new Intl.DateTimeFormat('ru-RU', {
+  hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: 'Europe/Moscow',
+});
+const deliveryResults = {
+  ready: 'Ожидает отправки', no_subscription: 'Нет действующей подписки iPhone',
+  sending: 'Отправляется', retry: 'Ожидает повтора', accepted: 'Принято службой доставки',
+  failed: 'Ошибка отправки', unknown: 'Результат отправки неизвестен', closed: 'Окно отправки закрыто',
+  closed_no_subscription: 'Окно закрыто, действующей подписки iPhone не было',
+};
 function today() {
   const parts = Object.fromEntries(moscow.formatToParts().map(({type,value}) => [type,value]));
   return parts.year + '-' + parts.month + '-' + parts.day;
@@ -71,6 +82,24 @@ function renderSnapshotLink() {
     : 'Сохранённая сводка за ' + shortDate.format(new Date(saved.date));
 }
 
+function renderMorning(data) {
+  const morning = snapshot ? null : data?.morning;
+  morningLink.hidden = morningLog.hidden = !morning;
+  if (!morning) {
+    morningLink.removeAttribute('href');
+    return;
+  }
+  const link = new URL(location.pathname, location.origin);
+  link.searchParams.set('summary', morning.id);
+  morningLink.href = link.href;
+  const time = value => moscowTime.format(new Date(value));
+  byId('morning-digest-times').textContent = 'По Москве. План: ' + time(morning.planned_at) +
+    ' · Снимок: ' + time(morning.created_at) + ' · ' + deliveryResults[morning.result];
+  byId('morning-digest-attempts').replaceChildren(...morning.attempts.map(attempt => element('li',
+    [time(attempt.started_at), attempt.finished_at && time(attempt.finished_at),
+      deliveryResults[attempt.result], attempt.http_status && 'HTTP ' + attempt.http_status].filter(Boolean).join(' · '))));
+}
+
 function render(data = null) {
   const events = data?.events ?? [];
   const tasks = data?.tasks ?? [];
@@ -113,6 +142,7 @@ function render(data = null) {
   byId('open-live-digest').hidden = !snapshot;
   save.hidden = !data || Boolean(snapshot);
   renderSnapshotLink();
+  renderMorning(data);
 }
 
 async function load() {
