@@ -8,10 +8,8 @@ const moscowDate = new Intl.DateTimeFormat('en', {
   year: 'numeric', month: '2-digit', day: '2-digit', timeZone: 'Europe/Moscow',
 });
 const firstStudyWeek = '2026-11-09'; // 11-я неделя по утверждённому расписанию.
-const studyWeeks = [
-  'Одиннадцатая', 'Двенадцатая', 'Тринадцатая', 'Четырнадцатая',
-  'Пятнадцатая', 'Шестнадцатая', 'Семнадцатая', 'Восемнадцатая',
-];
+const firstStudyWeekNumber = 11;
+const lastStudyWeek = '2026-12-28';
 const millisecondsPerWeek = 7 * 24 * 60 * 60 * 1000;
 const message = {
   unauthorized: 'Сеанс истёк. Откройте ATLAS OS заново.',
@@ -110,9 +108,10 @@ export function setupSchedule(getSession) {
     const chosen = monday;
     const last = new Date(shift(chosen, 6));
     byId('week-range').textContent = dateFormat.formatRange(new Date(chosen), last);
-    const ordinal = studyWeeks[(Date.parse(chosen) - Date.parse(firstStudyWeek)) / millisecondsPerWeek];
-    byId('week-number').textContent = ordinal ? ordinal + ' неделя' : '';
-    byId('week-number').hidden = !ordinal;
+    const covered = chosen >= firstStudyWeek && chosen <= lastStudyWeek;
+    const weekNumber = firstStudyWeekNumber + (Date.parse(chosen) - Date.parse(firstStudyWeek)) / millisecondsPerWeek;
+    byId('week-number').textContent = covered ? '(' + weekNumber + ' неделя)' : '';
+    byId('week-number').hidden = !covered;
     weekStatus.textContent = 'Загружаем расписание…';
     byId('week-retry').hidden = true;
     weekDays.replaceChildren();
