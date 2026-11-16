@@ -1,6 +1,7 @@
 import { supabaseUrl, publishableKey } from './access-config.js';
 import qrcode from './assets/qrcode.js';
 import { setupPush } from './push.js';
+import { DigestTimeoutError, requestDigest } from './digest-request.js';
 
 const secretPattern = /^[0-9a-f]{64}$/u;
 const digestPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
@@ -139,7 +140,7 @@ export function startAccess(showDigest) {
   }
 
   async function openDigest(initial = false) {
-    const result = await rpc('atlas_open_digest', { p_session: session, p_digest: digestId });
+    const result = await requestDigest(supabaseUrl, session, digestId);
     if (result.error === 'unauthorized') {
       if (!initial) return false;
       forgetSession();
@@ -171,8 +172,11 @@ export function startAccess(showDigest) {
     locked('Открываем сохранённую сводку…', false);
     try {
       return await openDigest(initial);
-    } catch {
-      locked(networkError, false);
+    } catch (error) {
+      const text = error instanceof DigestTimeoutError
+        ? 'Сводка не загрузилась за 8 секунд. Проверьте сеть и нажмите «Повторить».'
+        : networkError;
+      locked(text, false);
       byId('retry-access').hidden = false;
       return false;
     }
